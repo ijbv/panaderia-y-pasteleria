@@ -39,7 +39,7 @@ function enviarCorreoDelivery(correoDelivery, nombreDelivery, pedido) {
   }
   if (!correoDelivery) { console.warn('Sin correo de delivery'); return; }
   var items = pedido.items ? pedido.items.map(function(i){ return i.name + ' ×' + i.qty; }).join(', ') : '';
-  var pageUrl = window.location.href.split('?')[0];
+  var pageUrl = 'https://ijbv.github.io/PANADERIA-Y-PASTELERIA/';
   var params = {
     to_email:    correoDelivery,
     to_name:     nombreDelivery,
@@ -1355,6 +1355,20 @@ function renderPedidosAdmin() {
       (p.direccion ? '<p style="margin:.2rem 0; font-size:.83rem; color:#666;">📍 ' + p.direccion + '</p>' : '') +
       (p.telefono  ? '<p style="margin:.2rem 0; font-size:.83rem; color:#666;">📞 ' + p.telefono  + '</p>' : '') +
       '<p style="margin:.2rem 0; font-size:.8rem; color:#999;">📅 ' + fecha + ' · <strong>$' + parseFloat(p.total).toFixed(2) + '</strong></p>' +
+      (p.delivery_nombre ? '<p style="margin:.2rem 0; font-size:.8rem; color:#666;">🛵 Delivery: <strong>' + p.delivery_nombre + '</strong></p>' : '') +
+      (estado === 'entregado' && p.foto_entrega
+        ? '<div style="margin:.8rem 0 .4rem;">' +
+            '<p style="font-size:.78rem; font-weight:700; color:#555; margin:0 0 .4rem;">📸 Foto de entrega</p>' +
+            '<a href="' + p.foto_entrega + '" target="_blank">' +
+              '<img src="' + p.foto_entrega + '" ' +
+                'style="max-width:100%;max-height:200px;border-radius:.7rem;border:2px solid #d4edda;display:block;cursor:pointer;" ' +
+                'alt="Foto de entrega" />' +
+            '</a>' +
+            '<p style="font-size:.72rem;color:#aaa;margin:.3rem 0 0;">Toca la foto para verla completa</p>' +
+          '</div>'
+        : (estado === 'entregado' && !p.foto_entrega
+            ? '<p style="font-size:.78rem; color:#f0ad4e; margin:.5rem 0 .2rem;">⚠ Sin foto de entrega</p>'
+            : '')) +
       '<div style="display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; margin-top:.8rem;">' +
         selectEstado + deliveryBtn + waRetiroBtn +
       '</div>' +
