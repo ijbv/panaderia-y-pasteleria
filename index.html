@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pan y Miel — Panadería y Pastelería Artesanal</title>
+  <meta name="description" content="Panadería y pastelería artesanal. Pan fresco y pasteles elaborados con ingredientes 100% naturales cada día.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- OVERLAYS -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ── CARRITO LATERAL ── -->
+<aside class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2>Tu Pedido</h2>
+    <button class="cart-close" onclick="toggleCart()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <p class="cart-empty">Tu carrito está vacío</p>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total</span>
+      <strong id="cartTotal">$0.00</strong>
+    </div>
+    <button class="btn-checkout" onclick="openCheckout()">Confirmar Pedido</button>
+  </div>
+</aside>
+
+<!-- ── MODAL CHECKOUT ── -->
+<div class="checkout-overlay" id="checkoutOverlay"></div>
+<div class="checkout-modal" id="checkoutModal">
+  <button class="modal-close checkout-close-btn" onclick="cancelCheckout()"><i class="fa-solid fa-xmark"></i></button>
+
+  <!-- Paso 1: Entrega -->
+  <div class="checkout-step" id="stepEntrega">
+    <div class="checkout-step-header">
+      <span class="checkout-step-num">1</span>
+      <h2>¿Cómo quieres recibir tu pedido?</h2>
+    </div>
+    <div class="delivery-options">
+      <label class="delivery-option" id="optDelivery">
+        <input type="radio" name="entrega" value="delivery" onchange="selectEntrega('delivery')">
+        <div class="delivery-option-inner">
+          <i class="fa-solid fa-truck-fast"></i>
+          <strong>Delivery</strong>
+          <span>Te lo llevamos a casa</span>
+          <em>+$2.00 de envío</em>
+        </div>
+      </label>
+      <label class="delivery-option" id="optRetiro">
+        <input type="radio" name="entrega" value="retiro" onchange="selectEntrega('retiro')">
+        <div class="delivery-option-inner">
+          <i class="fa-solid fa-store"></i>
+          <strong>Retiro en tienda</strong>
+          <span>Pásalo a buscar</span>
+          <em>Sin costo adicional</em>
+        </div>
+      </label>
+    </div>
+    <div class="delivery-address" id="deliveryAddress" style="display:none">
+      <label>Dirección de entrega</label>
+      <input type="text" id="addressInput" placeholder="Calle, número, sector…">
+      <label style="margin-top:.7rem">Teléfono de contacto</label>
+      <input type="tel" id="phoneInput" placeholder="Ej: 0414-1234567">
+    </div>
+    <div id="retiroPhone" style="display:none; margin-top:.8rem;">
+      <label style="font-size:.9rem; color:var(--warm-gray); font-weight:600;">📱 Tu WhatsApp (para avisarte cuando esté listo)</label>
+      <input type="tel" id="retiroPhoneInput" placeholder="Ej: 0414-1234567" style="width:100%; margin-top:.4rem; padding:.7rem 1rem; border:1.5px solid var(--border); border-radius:.7rem; font-family:var(--font-body); font-size:.95rem; box-sizing:border-box;">
+    </div>
+    <div class="checkout-actions">
+      <button class="btn-cancel-checkout" onclick="cancelCheckout()"><i class="fa-solid fa-xmark"></i> Cancelar pedido</button>
+      <button class="btn-next-step" onclick="goToPayment()" id="btnGoPayment" disabled>Continuar <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Paso 2: Pago -->
+  <div class="checkout-step" id="stepPago" style="display:none">
+    <div class="checkout-step-header">
+      <span class="checkout-step-num">2</span>
+      <h2>Método de pago</h2>
+    </div>
+    <div class="payment-methods">
+      <label class="payment-option" id="payEfectivo">
+        <input type="radio" name="pago" value="efectivo" onchange="selectPago('efectivo')">
+        <div class="payment-option-inner">
+          <i class="fa-solid fa-money-bill-wave"></i>
+          <div>
+            <strong>Efectivo</strong>
+            <span>Paga al recibir o al retirar</span>
+          </div>
+        </div>
+      </label>
+      <label class="payment-option" id="payTransferencia">
+        <input type="radio" name="pago" value="transferencia" onchange="selectPago('transferencia')">
+        <div class="payment-option-inner">
+          <i class="fa-solid fa-building-columns"></i>
+          <div>
+            <strong>Transferencia bancaria</strong>
+            <span>Banco Venezuela · Banesco · Mercantil</span>
+          </div>
+        </div>
+      </label>
+      <label class="payment-option" id="payPagoMovil">
+        <input type="radio" name="pago" value="pagomovil" onchange="selectPago('pagomovil')">
+        <div class="payment-option-inner">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+          <div>
+            <strong>Pago Móvil</strong>
+            <span>Rápido y seguro desde tu banco</span>
+          </div>
+        </div>
+      </label>
+
+      <!-- Panel datos Pago Móvil -->
+      <div class="pagomovil-panel" id="pagoMovilPanel">
+        <p class="pagomovil-title"><i class="fa-solid fa-circle-info"></i> Realiza tu Pago Móvil a estos datos:</p>
+        <div class="pagomovil-datos">
+          <div class="pagomovil-dato">
+            <span>Banco</span>
+            <strong>Banco de Venezuela</strong>
+          </div>
+          <div class="pagomovil-dato">
+            <span>Teléfono</span>
+            <strong>0414-8862010</strong>
+          </div>
+          <div class="pagomovil-dato">
+            <span>Cédula</span>
+            <strong>V-31.382.288</strong>
+          </div>
+        </div>
+        <p class="pagomovil-hint">Luego sube la foto del comprobante:</p>
+        <label class="upload-comprobante" id="uploadLabel">
+          <input type="file" id="comprobanteInput" accept="image/*" onchange="handleComprobante(event)">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span id="uploadText">Toca para subir comprobante</span>
+        </label>
+        <div class="comprobante-preview" id="comprobantePreview" style="display:none">
+          <img id="comprobanteImg" src="" alt="Comprobante">
+          <button class="remove-comprobante" onclick="removeComprobante()"><i class="fa-solid fa-xmark"></i> Cambiar</button>
+        </div>
+      </div>
+
+      <label class="payment-option" id="payTarjeta">
+        <input type="radio" name="pago" value="tarjeta" onchange="selectPago('tarjeta')">
+        <div class="payment-option-inner">
+          <i class="fa-solid fa-credit-card"></i>
+          <div>
+            <strong>Tarjeta</strong>
+            <span>Débito o crédito en tienda</span>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <!-- Resumen del pedido -->
+    <div class="checkout-summary">
+      <h3>Resumen</h3>
+      <div id="checkoutSummaryItems"></div>
+      <div class="summary-row"><span>Subtotal</span><strong id="summarySubtotal"></strong></div>
+      <div class="summary-row" id="summaryDeliveryRow"><span>Envío</span><strong id="summaryDelivery"></strong></div>
+      <div class="summary-row summary-total"><span>Total</span><strong id="summaryTotal"></strong></div>
+    </div>
+
+    <div class="checkout-actions">
+      <button class="btn-back-step" onclick="backToEntrega()"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+      <button class="btn-confirm-checkout" onclick="confirmCheckout()" id="btnConfirm" disabled>
+        <i class="fa-solid fa-check"></i> Confirmar pedido
+      </button>
+    </div>
+  </div>
+
+  <!-- Paso 3: Confirmación -->
+  <div class="checkout-step" id="stepConfirmado" style="display:none">
+    <div class="checkout-confirmed">
+      <div class="confirmed-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <h2>¡Pedido confirmado!</h2>
+      <p id="codigoPedido" class="codigo-pedido"></p>
+      <button class="btn-copiar-codigo" id="btnCopiarCodigo" onclick="copiarCodigo()" style="display:none">
+        <i class="fa-solid fa-copy"></i> Copiar código
+      </button>
+      <div class="codigo-explicacion" id="codigoExplicacion" style="display:none">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>Guarda este código para rastrear tu pedido en la sección <strong>"Mi Pedido"</strong> del menú</span>
+      </div>
+      <p id="confirmedMsg"></p>
+      <button class="btn-primary" onclick="finishCheckout()" style="margin-top:.6rem">Volver a la tienda</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL VISTA RÁPIDA ── -->
+<div class="modal" id="quickModal">
+  <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-img-col">
+    <img src="" alt="" id="modalImg">
+  </div>
+  <div class="modal-info-col">
+    <p class="modal-label">Panadería Artesanal</p>
+    <h2 class="modal-name" id="modalName"></h2>
+    <div class="modal-stars">
+      <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <p class="modal-price" id="modalPrice"></p>
+    <p class="modal-desc">Elaborado artesanalmente cada mañana con los mejores ingredientes naturales. Sin conservantes ni aditivos artificiales.</p>
+    <button class="btn-modal-cart" id="modalCartBtn">Agregar al Carrito</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     TOPBAR
+     ══════════════════════════════════ -->
+<div class="topbar">
+  <div class="container">
+    <div class="topbar-contact">
+      <span><i class="fa-solid fa-phone"></i> 04148862010</span>
+      <span><i class="fa-solid fa-envelope"></i> ivasquejosue@gmail.com</span>
+    </div>
+    <div class="topbar-right">
+      <span>Envío gratis +$160</span>
+      <span>|</span>
+      <a href="#blogs">Blog</a>
+            <a href="#mi-pedido">Mi Pedido</a>
+      <a href="#contacto">Contacto</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     HEADER
+     ══════════════════════════════════ -->
+<header class="site-header">
+  <div class="container">
+    <div class="header-inner">
+
+      <!-- Logo -->
+      <a href="#" class="logo-wrap" style="text-decoration:none">
+        <div class="logo-icon"><i class="fa-solid fa-bread-slice"></i></div>
+        <div class="logo-text">
+          <span class="logo-name">Pan y Miel</span>
+          <span class="logo-sub">Panadería Artesanal</span>
+        </div>
+      </a>
+
+      <!-- Nav -->
+      <nav class="main-nav" id="mainNav">
+        <ul>
+          <li><a href="#categorias">Categorías</a></li>
+          <li><a href="#productos">Productos</a></li>
+          <li><a href="#mas-vendidos">Más Vendidos</a></li>
+          <li><a href="#especiales">Especiales</a></li>
+          <li><a href="#blogs">Blog</a>
+            <a href="#mi-pedido">Mi Pedido</a></li>
+        </ul>
+      </nav>
+
+      <!-- Acciones -->
+      <div class="header-actions">
+        <form class="search-form" onsubmit="handleSearch(event)">
+          <input type="search" id="searchInput" placeholder="Buscar productos…" autocomplete="off">
+          <button type="submit" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </form>
+        <button class="btn-icon" title="Favoritos" onclick="showToast('❤️ Lista de deseos próximamente')">
+          <i class="fa-regular fa-heart"></i>
+        </button>
+        <button class="btn-icon" title="Mi carrito" onclick="toggleCart()" style="position:relative">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+        <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()" aria-label="Menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════
+     HERO
+     ══════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content container">
+    <p class="hero-label">Desde 2018 · Hecho con amor</p>
+    <h1>Pan Fresco,<br><em>Cada Mañana</em></h1>
+    <p class="hero-desc">Elaboramos nuestros productos con ingredientes 100% naturales, sin conservantes, directamente desde el horno hasta tu mesa.</p>
+    <div class="hero-ctas">
+      <a href="#productos" class="btn-primary">Ver Productos</a>
+      <a href="#categorias" class="btn-outline">Nuestras Categorías</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     FEATURES BAR
+     ══════════════════════════════════ -->
+<div class="features-bar">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-truck-fast"></i></div>
+        <div class="feature-text">
+          <span>Envío a domicilio</span>
+          <p>Gratis en pedidos +$160</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="feature-text">
+          <span>Garantía total</span>
+          <p>100% devolución de dinero</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-gift"></i></div>
+        <div class="feature-text">
+          <span>Tarjeta regalo</span>
+          <p>Bonos especiales exclusivos</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
+        <div class="feature-text">
+          <span>Soporte 24/7</span>
+          <p>Siempre a tu disposición</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     CATEGORÍAS
+     ══════════════════════════════════ -->
+<section class="section" id="categorias">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Lo que nos hace únicos</p>
+      <h2 class="section-title">Nuestras <em>Categorías</em></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="categories-grid">
+
+      <div class="category-card" onclick="scrollToProducts()">
+        <img src="img/descarga 3.jpg" alt="Tres leche" loading="lazy">
+        <div class="category-card-content">
+          <p>Tres Leche</p>
+          <span>Explorar <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+      </div>
+
+      <div class="category-card" onclick="scrollToProducts()">
+        <img src="img/descarga.jpg" alt="Croissant" loading="lazy">
+        <div class="category-card-content">
+          <p>Croissant</p>
+          <span>Explorar <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+      </div>
+
+      <div class="category-card" onclick="scrollToProducts()">
+        <img src="img/descarga 1.jpg" alt="Pan de queso" loading="lazy">
+        <div class="category-card-content">
+          <p>Pan de Queso</p>
+          <span>Explorar <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     MEJORES PRODUCTOS
+     ══════════════════════════════════ -->
+<section class="section" id="productos" style="background:var(--cream-dark)">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Selección del maestro panadero</p>
+      <h2 class="section-title">Mejores <em>Productos</em></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="products-grid">
+
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="img/pan.jpg" alt="Pan de jamón" loading="lazy">
+          <span class="product-badge">-10%</span>
+          <div class="product-actions">
+            <button class="product-action-btn" onclick="addToWishlist('Pan de jamón')" title="Favorito"><i class="fa-regular fa-heart"></i></button>
+            <button class="product-action-btn" onclick="quickView('Pan de jamón','img/pan.jpg','$4.50',1,4.50)" title="Vista rápida"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-regular fa-star empty"></i>
+          </div>
+          <h3 class="product-name">Pan de Jamón</h3>
+          <div class="product-footer">
+            <span class="product-price">$4.50</span>
+            <button class="btn-add-cart" onclick="addToCart(1,'Pan de jamón',4.50,'img/pan.jpg')">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="img/Cafe.jpg" alt="Cafe con Leche" loading="lazy">
+          <div class="product-actions">
+            <button class="product-action-btn" onclick="addToWishlist('Café con Leche')" title="Favorito"><i class="fa-regular fa-heart"></i></button>
+            <button class="product-action-btn" onclick="quickView('Café con Leche','img/Cafe.jpg','$3.50',2,3.50)" title="Vista rápida"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-regular fa-star empty"></i>
+          </div>
+          <h3 class="product-name">Café con Leche</h3>
+          <div class="product-footer">
+            <span class="product-price">$3.50</span>
+            <button class="btn-add-cart" onclick="addToCart(2,'Café con Leche',3.50,'img/Cafe.jpg')">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="img/cachitosdejampon.jpg" alt="Cachitos de Jamon" loading="lazy">
+          <span class="product-badge" style="background:var(--ink)">Popular</span>
+          <div class="product-actions">
+            <button class="product-action-btn" onclick="addToWishlist('Cachitos de Jamón')" title="Favorito"><i class="fa-regular fa-heart"></i></button>
+            <button class="product-action-btn" onclick="quickView('Cachitos de Jamón','img/cachitosdejampon.jpg','$2.50',3,2.50)" title="Vista rápida"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <h3 class="product-name">Cachitos de Jamón</h3>
+          <div class="product-footer">
+            <span class="product-price">$2.50</span>
+            <button class="btn-add-cart" onclick="addToCart(3,'Cachitos de Jamón',2.50,'img/cachitosdejampon.jpg')">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="img/imagespasta.jpg" alt="Pasta Seca" loading="lazy">
+          <div class="product-actions">
+            <button class="product-action-btn" onclick="addToWishlist('Pasta Seca')" title="Favorito"><i class="fa-regular fa-heart"></i></button>
+            <button class="product-action-btn" onclick="quickView('Pasta Seca','img/imagespasta.jpg','$1.50',4,1.50)" title="Vista rápida"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-regular fa-star empty"></i>
+          </div>
+          <h3 class="product-name">Pasta Seca</h3>
+          <div class="product-footer">
+            <span class="product-price">$1.50</span>
+            <button class="btn-add-cart" onclick="addToCart(4,'Pasta Seca',1.50,'img/imagespasta.jpg')">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     MÁS VENDIDOS (galería editorial)
+     ══════════════════════════════════ -->
+<section class="bestsellers-section" id="mas-vendidos">
+  <div class="container">
+    <div class="bestsellers-header">
+      <p class="section-label">Los favoritos de nuestros clientes</p>
+      <h2 class="section-title">Más <em>Vendidos</em></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="bestsellers-layout">
+      <img src="img/gallery1.jpg" alt="Producto 1" loading="lazy">
+      <img src="img/gallery3.jpg" alt="Producto destacado" class="bs-main" loading="lazy">
+      <img src="img/gallery2.jpg" alt="Producto 2" loading="lazy">
+      <img src="img/gallery4.jpg" alt="Producto 4" loading="lazy">
+      <img src="img/gallery5.jpg" alt="Producto 5" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     ESPECIALES
+     ══════════════════════════════════ -->
+<section class="specials-section section" id="especiales">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Creaciones únicas</p>
+      <h2 class="section-title">Edición <em>Especial</em></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="products-grid">
+
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="img/receta-de-trenza-alemana.jpg" alt="Pan Trenzado" loading="lazy">
+          <span class="product-badge">Especial</span>
+          <div class="product-actions">
+            <button class="product-action-btn" onclick="addToWishlist('Pan Trenzado')" title="Favorito"><i class="fa-regular fa-heart"></i></button>
+            <button class="product-action-btn" onclick="quickView('Pan Trenzado','img/receta-de-trenza-alemana.jpg','$3.00',5,3.00)" title="Vista rápida"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-regular fa-star empty"></i>
+          </div>
+          <h3 class="product-name">Pan Trenzado</h3>
+          <div class="product-footer">
+            <span class="product-price">$3.00</span>
+            <button class="btn-add-cart" onclick="addToCart(5,'Pan Trenzado',3.00,'img/receta-de-trenza-alemana.jpg')">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="img/tortachocolate.jpg" alt="Pastel de Chocolate" loading="lazy">
+          <span class="product-badge">⭐ Top</span>
+          <div class="product-actions">
+            <button class="product-action-btn" onclick="addToWishlist('Pastel de Chocolate')" title="Favorito"><i class="fa-regular fa-heart"></i></button>
+            <button class="product-action-btn" onclick="quickView('Pastel de Chocolate','img/tortachocolate.jpg','$5.50',6,5.50)" title="Vista rápida"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <h3 class="product-name">Pastel de Chocolate</h3>
+          <div class="product-footer">
+            <span class="product-price">$5.50</span>
+            <button class="btn-add-cart" onclick="addToCart(6,'Pastel de Chocolate',5.50,'img/tortachocolate.jpg')">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="img/pande(1).jpg" alt="Pan de Leche" loading="lazy">
+          <div class="product-actions">
+            <button class="product-action-btn" onclick="addToWishlist('Pan de Leche')" title="Favorito"><i class="fa-regular fa-heart"></i></button>
+            <button class="product-action-btn" onclick="quickView('Pan de Leche','img/pande(1).jpg','$2.00',7,2.00)" title="Vista rápida"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-regular fa-star empty"></i>
+          </div>
+          <h3 class="product-name">Pan de Leche</h3>
+          <div class="product-footer">
+            <span class="product-price">$2.00</span>
+            <button class="btn-add-cart" onclick="addToCart(7,'Pan de Leche',2.00,'img/pande(1).jpg')">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="img/ponquecitos.jpeg" alt="Ponquesitos" loading="lazy">
+          <span class="product-badge">-20%</span>
+          <div class="product-actions">
+            <button class="product-action-btn" onclick="addToWishlist('Ponquesitos')" title="Favorito"><i class="fa-regular fa-heart"></i></button>
+            <button class="product-action-btn" onclick="quickView('Ponquesitos','img/ponquecitos.jpeg','$1.00',8,1.00)" title="Vista rápida"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-regular fa-star empty"></i>
+          </div>
+          <h3 class="product-name">Ponquesitos</h3>
+          <div class="product-footer">
+            <span class="product-price">$1.00</span>
+            <button class="btn-add-cart" onclick="addToCart(8,'Ponquesitos',1.00,'img/ponquecitos.jpeg')">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     BLOG
+     ══════════════════════════════════ -->
+<!-- ── SECCIÓN BUSCAR PEDIDO ── -->
+<section class="buscar-pedido-section" id="mi-pedido">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Seguimiento</span>
+      <h2>¿Dónde está mi pedido?</h2>
+      <p>Ingresa el código que recibiste al confirmar tu pedido</p>
+    </div>
+    <div class="buscar-pedido-box">
+      <div class="buscar-input-row">
+        <input type="text" id="buscarCodigo" placeholder="Ej: #FB3E8AD0" maxlength="10"
+          onkeydown="if(event.key==='Enter') buscarPedido()">
+        <button onclick="buscarPedido()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+      </div>
+      <div id="pedidoResultado"></div>
+    </div>
+  </div>
+</section>
+
+<section class="blogs-section" id="blogs">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Novedades & Recetas</p>
+      <h2 class="section-title">Últimas <em>Entradas</em></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="blogs-grid">
+
+      <article class="blog-card">
+        <div class="blog-img-wrap">
+          <img src="img/blogs 1.jpg" alt="Calidad de Servicio" loading="lazy">
+          <div class="blog-img-overlay">
+            <button class="blog-overlay-btn" onclick="showToast('📰 Artículo próximamente')"><i class="fa-solid fa-eye"></i></button>
+            <button class="blog-overlay-btn" onclick="showToast('🔗 Enlace copiado')"><i class="fa-solid fa-share-nodes"></i></button>
+          </div>
+        </div>
+        <div class="blog-meta">
+          <span>Panadería</span>
+          <span style="color:var(--warm-gray)">20 feb 2024</span>
+        </div>
+        <h3 class="blog-title">Calidad de Servicio Artesanal</h3>
+        <p class="blog-excerpt">Contamos con personal capacitado y especializado para elaborar cada uno de nuestros productos con una calidad excepcional.</p>
+        <a href="#" class="btn-read" onclick="showToast('📰 Próximamente...');return false">Leer artículo</a>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-img-wrap">
+          <img src="img/blog 2.jpg" alt="Bienestar y comodidad" loading="lazy">
+          <div class="blog-img-overlay">
+            <button class="blog-overlay-btn" onclick="showToast('📰 Artículo próximamente')"><i class="fa-solid fa-eye"></i></button>
+            <button class="blog-overlay-btn" onclick="showToast('🔗 Enlace copiado')"><i class="fa-solid fa-share-nodes"></i></button>
+          </div>
+        </div>
+        <div class="blog-meta">
+          <span>Experiencia</span>
+          <span style="color:var(--warm-gray)">20 feb 2024</span>
+        </div>
+        <h3 class="blog-title">Bienestar y Comodidad en Familia</h3>
+        <p class="blog-excerpt">Nuestro agradable y cómodo espacio brinda una gran experiencia para disfrutar y degustar en familia los mejores productos.</p>
+        <a href="#" class="btn-read" onclick="showToast('📰 Próximamente...');return false">Leer artículo</a>
+      </article>
+
+      <article class="blog-card">
+        <div class="blog-img-wrap">
+          <img src="img/blog 3.jpg" alt="Gran variedad" loading="lazy">
+          <div class="blog-img-overlay">
+            <button class="blog-overlay-btn" onclick="showToast('📰 Artículo próximamente')"><i class="fa-solid fa-eye"></i></button>
+            <button class="blog-overlay-btn" onclick="showToast('🔗 Enlace copiado')"><i class="fa-solid fa-share-nodes"></i></button>
+          </div>
+        </div>
+        <div class="blog-meta">
+          <span>Catálogo</span>
+          <span style="color:var(--warm-gray)">20 feb 2024</span>
+        </div>
+        <h3 class="blog-title">Gran Variedad de Productos Frescos</h3>
+        <p class="blog-excerpt">Disponemos de un extenso catálogo de productos de la mejor calidad elaborados diariamente para satisfacer todas las preferencias.</p>
+        <a href="#" class="btn-read" onclick="showToast('📰 Próximamente...');return false">Leer artículo</a>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     NEWSLETTER
+     ══════════════════════════════════ -->
+<div class="newsletter-strip">
+  <div class="container">
+    <div class="newsletter-inner">
+      <div class="newsletter-copy">
+        <p class="section-label">Ofertas exclusivas</p>
+        <h2>Suscríbete y recibe<br>descuentos especiales</h2>
+      </div>
+      <div class="newsletter-form">
+        <input type="email" id="newsletterEmail" placeholder="Tu correo electrónico…">
+        <button onclick="handleNewsletter()">Suscribirse</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     FOOTER
+     ══════════════════════════════════ -->
+<footer class="site-footer" id="contacto">
+  <div class="container">
+    <div class="footer-grid">
+
+      <div class="footer-brand">
+        <a href="#" class="logo-wrap" style="text-decoration:none;margin-bottom:2rem;display:flex">
+          <div class="logo-icon"><i class="fa-solid fa-bread-slice"></i></div>
+          <div class="logo-text">
+            <span class="logo-name" style="color:var(--cream)">Pan y Miel</span>
+            <span class="logo-sub">Panadería Artesanal</span>
+          </div>
+        </a>
+        <p>Elaboramos pan fresco y pasteles artesanales cada mañana con los mejores ingredientes naturales, sin conservantes.</p>
+        <div class="social-row">
+          <a href="#" class="social-btn" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="social-btn" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-btn" title="X / Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" class="social-btn" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          <a href="#" class="social-btn" title="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Información</h4>
+        <ul>
+          <li><a href="#">Acerca de Nosotros</a></li>
+          <li><a href="#">Información Delivery</a></li>
+          <li><a href="#">Políticas de Privacidad</a></li>
+          <li><a href="#">Términos y Condiciones</a></li>
+          <li><a href="#">Contáctanos</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Mi Cuenta</h4>
+        <ul>
+          <li><a href="#">Mi cuenta</a></li>
+          <li><a href="#">Historial de órdenes</a></li>
+          <li><a href="#">Lista de deseos</a></li>
+          <li><a href="#">Boletín</a></li>
+          <li><a href="#">Reembolsos</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contacto</h4>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>71 Pennington Lane Vernon Rockville, CT 06066</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <span>04148862010</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-fax"></i>
+          <span>55555300</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <span>ivasquejosue@gmail.com</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2024 Pan y Miel · Desarrollado por Leonardo, Daniela, Oriana e Isaac</p>
+      <img src="img/Sin título.png" alt="Métodos de pago">
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="app.js"></script>
+<!-- ── PANTALLA DELIVERY ── -->
+<div id="deliveryScreen" style="display:none; position:fixed; inset:0; background:#f5f0e8; z-index:9999; overflow-y:auto; padding:1.5rem;">
+  <div style="max-width:700px; margin:0 auto;">
+
+    <!-- PANEL REGISTRO / LOGIN -->
+    <div id="deliveryPanelRegistro">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+        <h1 style="font-family:var(--font-display); font-size:1.8rem; color:var(--ink); margin:0;">🛵 Portal Delivery</h1>
+        <button onclick="cerrarDelivery()" style="background:none; border:1.5px solid #ccc; border-radius:.6rem; padding:.4rem .9rem; cursor:pointer; font-size:.85rem; color:var(--warm-gray);">✕ Cerrar</button>
+      </div>
+      <div style="background:#fff; border-radius:1.2rem; box-shadow:0 4px 20px rgba(0,0,0,.1); max-width:440px; margin:2rem auto; overflow:hidden;">
+
+        <!-- Tabs -->
+        <div style="display:flex; border-bottom:2px solid #f0ebe2;">
+          <button id="tabLoginBtn" onclick="switchDeliveryTab('login')" style="flex:1; padding:1rem; border:none; background:#fff; font-family:var(--font-body); font-size:.95rem; font-weight:700; color:var(--amber); border-bottom:2.5px solid var(--amber); margin-bottom:-2px; cursor:pointer;">
+            Iniciar sesión
+          </button>
+          <button id="tabRegistroBtn" onclick="switchDeliveryTab('registro')" style="flex:1; padding:1rem; border:none; background:#fff; font-family:var(--font-body); font-size:.95rem; font-weight:600; color:var(--warm-gray); border-bottom:2.5px solid transparent; margin-bottom:-2px; cursor:pointer;">
+            Registrarme
+          </button>
+        </div>
+
+        <div style="padding:1.8rem;">
+          <div style="text-align:center; margin-bottom:1.5rem;">
+            <div style="font-size:2.8rem; margin-bottom:.4rem;">🛵</div>
+            <p id="deliveryTabSubtitle" style="color:var(--warm-gray); font-size:.9rem; margin:0;">Ingresa tu correo y contraseña para continuar.</p>
+          </div>
+
+          <!-- FORMULARIO LOGIN -->
+          <div id="formLogin" style="display:flex; flex-direction:column; gap:.9rem;">
+            <div>
+              <label style="display:block; font-size:.82rem; font-weight:600; color:var(--ink); margin-bottom:.35rem;">Correo electrónico</label>
+              <input id="loginCorreo" type="email" placeholder="tu@correo.com" style="width:100%; padding:.75rem 1rem; border:1.5px solid #e0d5c5; border-radius:.6rem; font-size:.95rem; box-sizing:border-box; font-family:var(--font-body);">
+            </div>
+            <div>
+              <label style="display:block; font-size:.82rem; font-weight:600; color:var(--ink); margin-bottom:.35rem;">Contraseña</label>
+              <input id="loginPassword" type="password" placeholder="••••••••" style="width:100%; padding:.75rem 1rem; border:1.5px solid #e0d5c5; border-radius:.6rem; font-size:.95rem; box-sizing:border-box; font-family:var(--font-body);">
+            </div>
+            <button onclick="loginDelivery()" style="background:var(--amber); color:#fff; border:none; border-radius:.7rem; padding:.85rem; font-size:1rem; font-weight:700; cursor:pointer; font-family:var(--font-body); margin-top:.3rem;">
+              Entrar →
+            </button>
+          </div>
+
+          <!-- FORMULARIO REGISTRO -->
+          <div id="formRegistro" style="display:none; flex-direction:column; gap:.9rem;">
+            <div>
+              <label style="display:block; font-size:.82rem; font-weight:600; color:var(--ink); margin-bottom:.35rem;">Nombre completo</label>
+              <input id="regNombre" type="text" placeholder="Ej: Carlos Rodríguez" style="width:100%; padding:.75rem 1rem; border:1.5px solid #e0d5c5; border-radius:.6rem; font-size:.95rem; box-sizing:border-box; font-family:var(--font-body);">
+            </div>
+            <div>
+              <label style="display:block; font-size:.82rem; font-weight:600; color:var(--ink); margin-bottom:.35rem;">WhatsApp <span style="color:#aaa; font-weight:400;">(ej: 584121234567)</span></label>
+              <input id="regTelefono" type="tel" placeholder="584121234567" style="width:100%; padding:.75rem 1rem; border:1.5px solid #e0d5c5; border-radius:.6rem; font-size:.95rem; box-sizing:border-box; font-family:var(--font-body);">
+            </div>
+            <div>
+              <label style="display:block; font-size:.82rem; font-weight:600; color:var(--ink); margin-bottom:.35rem;">Correo electrónico</label>
+              <input id="regCorreo" type="email" placeholder="tu@correo.com" style="width:100%; padding:.75rem 1rem; border:1.5px solid #e0d5c5; border-radius:.6rem; font-size:.95rem; box-sizing:border-box; font-family:var(--font-body);">
+            </div>
+            <div>
+              <label style="display:block; font-size:.82rem; font-weight:600; color:var(--ink); margin-bottom:.35rem;">Contraseña <span style="color:#aaa; font-weight:400;">(mínimo 6 caracteres)</span></label>
+              <input id="regPassword" type="password" placeholder="••••••••" style="width:100%; padding:.75rem 1rem; border:1.5px solid #e0d5c5; border-radius:.6rem; font-size:.95rem; box-sizing:border-box; font-family:var(--font-body);">
+            </div>
+
+            <button onclick="registrarDelivery()" style="background:var(--amber); color:#fff; border:none; border-radius:.7rem; padding:.85rem; font-size:1rem; font-weight:700; cursor:pointer; font-family:var(--font-body); margin-top:.3rem;">
+              Crear cuenta →
+            </button>
+          </div>
+
+          <p id="deliveryRegError" style="color:#d9534f; font-size:.85rem; margin:.8rem 0 0; text-align:center; display:none;"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL PEDIDOS -->
+    <div id="deliveryPanelPedidos" style="display:none;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:.8rem;">
+        <div>
+          <h1 style="font-family:var(--font-display); font-size:1.8rem; color:var(--ink); margin:0 0 .2rem;">🛵 Pedidos Disponibles</h1>
+          <p id="deliveryBienvenido" style="color:var(--warm-gray); font-size:.9rem; margin:0;"></p>
+        </div>
+        <div style="display:flex; gap:.6rem;">
+          <button onclick="cerrarSesionDelivery()" style="background:none; border:1.5px solid #ccc; border-radius:.6rem; padding:.4rem .9rem; cursor:pointer; font-size:.85rem; color:var(--warm-gray);">Salir</button>
+          <button onclick="cerrarDelivery()" style="background:none; border:1.5px solid #ccc; border-radius:.6rem; padding:.4rem .9rem; cursor:pointer; font-size:.85rem; color:var(--warm-gray);">✕ Cerrar</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:.6rem; margin-bottom:1.2rem; flex-wrap:wrap; align-items:center;">
+        <button onclick="filtrarDelivery('disponibles')" class="btn-filtro-delivery active" id="filtroDisponibles">✅ Disponibles</button>
+        <button onclick="filtrarDelivery('mis')" class="btn-filtro-delivery" id="filtroMis">🧑‍🤝‍🧑 Mis pedidos</button>
+        <button onclick="cargarDelivery()" style="margin-left:auto; background:none; border:1.5px solid #ccc; border-radius:.6rem; padding:.4rem .8rem; cursor:pointer; font-size:.82rem; color:var(--warm-gray); display:flex; align-items:center; gap:.3rem;">
+          🔄 Actualizar
+        </button>
+      </div>
+
+      <div id="deliveryLista"><p style="color:var(--warm-gray); text-align:center; padding:2rem;">Cargando pedidos...</p></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Botón flotante acceso delivery -->
+<button onclick="abrirDelivery()" title="Pantalla Delivery" style="position:fixed; bottom:5rem; right:1.2rem; background:#25d366; color:#fff; border:none; border-radius:50%; width:3.2rem; height:3.2rem; font-size:1.3rem; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,.2); z-index:900; display:flex; align-items:center; justify-content:center;">🛵</button>
+
+<!-- ── PANEL ADMIN (DUEÑO) ── -->
+<div id="adminScreen" style="display:none; position:fixed; inset:0; background:#f5f0e8; z-index:10000; overflow-y:auto; padding:1.5rem;">
+  <div style="max-width:750px; margin:0 auto;">
+
+    <!-- Login admin -->
+    <div id="adminLogin">
+      <div style="text-align:center; margin-bottom:2rem;">
+        <h1 style="font-family:var(--font-display); font-size:2rem; color:var(--ink); margin:0 0 .3rem;">👑 Panel Dueño</h1>
+        <p style="color:var(--warm-gray); font-size:.9rem; margin:0;">Ingresa tu PIN para continuar</p>
+      </div>
+      <div style="background:#fff; border-radius:1.2rem; padding:1.5rem; box-shadow:0 4px 20px rgba(0,0,0,.08);">
+        <input id="adminPin" type="password" placeholder="PIN de administrador" style="width:100%; padding:.8rem 1rem; border:1.5px solid #ddd; border-radius:.7rem; font-size:1rem; font-family:var(--font-body); box-sizing:border-box; margin-bottom:.8rem;" onkeydown="if(event.key==='Enter') loginAdmin()" />
+        <p id="adminPinError" style="color:#d9534f; font-size:.85rem; display:none; margin:.3rem 0 .8rem;"></p>
+        <button onclick="loginAdmin()" style="width:100%; padding:.8rem; background:var(--amber); color:#fff; border:none; border-radius:.7rem; font-weight:700; font-size:1rem; cursor:pointer; font-family:var(--font-body);">Entrar</button>
+      </div>
+      <div style="text-align:center; margin-top:1rem;">
+        <button onclick="cerrarAdmin()" style="background:none; border:none; color:var(--warm-gray); cursor:pointer; font-size:.85rem;">✕ Cerrar</button>
+      </div>
+    </div>
+
+    <!-- Panel principal admin -->
+    <div id="adminPanel" style="display:none;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:.8rem;">
+        <h1 style="font-family:var(--font-display); font-size:1.8rem; color:var(--ink); margin:0;">👑 Panel Dueño</h1>
+        <div style="display:flex; gap:.6rem;">
+          <button onclick="cargarPedidosAdmin()" style="background:var(--amber); color:#fff; border:none; border-radius:.6rem; padding:.5rem 1rem; cursor:pointer; font-size:.85rem; font-family:var(--font-body);">🔄 Actualizar</button>
+          <button onclick="cerrarAdmin()" style="background:none; border:1.5px solid #ccc; border-radius:.6rem; padding:.4rem .9rem; cursor:pointer; font-size:.85rem; color:var(--warm-gray);">✕ Cerrar</button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.2rem;">
+        <button onclick="filtrarAdmin('todos')" class="btn-filtro-admin active" id="filtroAdminTodos">📋 Todos</button>
+        <button onclick="filtrarAdmin('pendiente')" class="btn-filtro-admin" id="filtroAdminPendiente">⏳ Pendientes</button>
+        <button onclick="filtrarAdmin('listo')" class="btn-filtro-admin" id="filtroAdminListo">👨‍🍳 Preparando</button>
+        <button onclick="filtrarAdmin('confirmado')" class="btn-filtro-admin" id="filtroAdminConfirmado">🛵 En camino</button>
+        <button onclick="filtrarAdmin('entregado')" class="btn-filtro-admin" id="filtroAdminEntregado">✅ Entregados</button>
+      </div>
+
+      <div id="adminLista"><p style="color:var(--warm-gray); text-align:center; padding:2rem;">Cargando...</p></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal asignar delivery -->
+<div id="modalAsignarDelivery" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:10001; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:#fff; border-radius:1.2rem; padding:1.5rem; max-width:380px; width:100%; box-shadow:0 8px 40px rgba(0,0,0,.2); font-family:var(--font-body);">
+    <h3 style="margin:0 0 .4rem; font-size:1.1rem; color:var(--ink);">🛵 Asignar delivery</h3>
+    <p style="color:#666; font-size:.88rem; margin:0 0 1rem;">Pedido <strong id="modalAsignarCodigo"></strong></p>
+    <div id="listaDeliveriesModal" style="display:flex; flex-direction:column; gap:.5rem; max-height:250px; overflow-y:auto; margin-bottom:1rem;"></div>
+    <button onclick="cerrarModalAsignar()" style="width:100%; padding:.7rem; border:1.5px solid #ddd; border-radius:.7rem; background:#fff; color:#555; font-weight:700; cursor:pointer; font-family:var(--font-body);">Cancelar</button>
+  </div>
+</div>
+
+<!-- Botón flotante acceso admin -->
+<button onclick="abrirAdmin()" title="Panel Dueño" style="position:fixed; bottom:9rem; right:1.2rem; background:var(--amber,#f59e0b); color:#fff; border:none; border-radius:50%; width:3.2rem; height:3.2rem; font-size:1.3rem; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,.2); z-index:900; display:flex; align-items:center; justify-content:center;">👑</button>
+
+</body>
+</html>
