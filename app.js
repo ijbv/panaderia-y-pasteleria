@@ -1371,6 +1371,10 @@ function renderPedidosAdmin() {
             : '')) +
       '<div style="display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; margin-top:.8rem;">' +
         selectEstado + deliveryBtn + waRetiroBtn +
+        (estado === 'entregado'
+          ? '<button onclick="borrarPedidoAdmin(\'' + p.id + '\')" ' +
+              'style="padding:.4rem .8rem; background:#fff; color:#d9534f; border:1.5px solid #d9534f; border-radius:.5rem; font-size:.82rem; font-weight:700; cursor:pointer; font-family:var(--font-body);">🗑 Borrar</button>'
+          : '') +
       '</div>' +
     '</div>';
   }).join('');
@@ -1390,6 +1394,25 @@ function cambiarEstadoAdmin(pedidoId, nuevoEstado) {
     showToast('✓ Estado actualizado: ' + nuevoEstado);
     setTimeout(cargarPedidosAdmin, 500);
   });
+}
+
+function borrarPedidoAdmin(pedidoId) {
+  if (!confirm('¿Seguro que quieres borrar este pedido? Esta acción no se puede deshacer.')) return;
+  fetch(SUPABASE_URL + '/rest/v1/pedidos?id=eq.' + pedidoId, {
+    method: 'DELETE',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Prefer': 'return=minimal'
+    }
+  }).then(function(r) {
+    if (r.ok) {
+      showToast('🗑 Pedido eliminado');
+      setTimeout(cargarPedidosAdmin, 400);
+    } else {
+      showToast('⚠ Error al borrar el pedido');
+    }
+  }).catch(function() { showToast('⚠ Error de conexión'); });
 }
 
 // ── ASIGNAR DELIVERY DESDE ADMIN ─────────────────
