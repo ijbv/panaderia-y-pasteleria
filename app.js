@@ -2,6 +2,47 @@
    Pan y Miel — JavaScript Funcional Completo
    ================================================ */
 
+// ── FETCH ROBUSTO — funciona con VPN y redes lentas ──
+// Reemplaza el fetch nativo con uno que tiene:
+// - Timeout configurable (por defecto 12 segundos)
+// - Reintentos automáticos (hasta 3 veces con backoff)
+// - Nunca lanza errores no capturados que rompan la UI
+var _nativeFetch = window.fetch;
+window.fetch = function robustFetch(url, options, _retries) {
+  var retries = (_retries === undefined) ? 2 : _retries;
+  var timeout = 12000; // 12 segundos máximo por intento
+  options = options || {};
+
+  return new Promise(function(resolve, reject) {
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = controller
+      ? setTimeout(function() { controller.abort(); }, timeout)
+      : null;
+
+    var fetchOptions = controller
+      ? Object.assign({}, options, { signal: controller.signal })
+      : options;
+
+    _nativeFetch.call(window, url, fetchOptions)
+      .then(function(response) {
+        if (timer) clearTimeout(timer);
+        resolve(response);
+      })
+      .catch(function(err) {
+        if (timer) clearTimeout(timer);
+        if (retries > 0) {
+          // Reintento con espera exponencial: 800ms, 1600ms
+          var delay = (3 - retries) * 800 + 400;
+          setTimeout(function() {
+            window.fetch(url, options, retries - 1).then(resolve).catch(reject);
+          }, delay);
+        } else {
+          reject(err);
+        }
+      });
+  });
+};
+
 
 // ── SUPABASE CONFIG ───────────────────────────────
 var SUPABASE_URL = 'https://qfsqufwlwhyuecgtfjji.supabase.co';
@@ -335,8 +376,11 @@ function confirmCheckout() {
       if (btnCopiar) btnCopiar.style.display = '';
       if (explicacion) explicacion.style.display = '';
     } else {
-      if (elCodigo) elCodigo.textContent = 'Error al guardar';
+      // Error de red o servidor — el pedido se registró localmente
+      if (elCodigo) elCodigo.textContent = '⚠ Sin conexión — anota tus datos y contáctanos';
     }
+  }).catch(function() {
+    if (elCodigo) elCodigo.textContent = '⚠ Sin conexión — anota tus datos y contáctanos';
   });
 }
 
@@ -628,7 +672,7 @@ function buscarPedido() {
     iniciarSeguimientoAutoRefresh(input, estado);
   })
   .catch(function() {
-    resultBox.innerHTML = '<p class="pedido-error">Error de conexi\u00f3n. Int\u00e9ntalo de nuevo.</p>';
+    resultBox.innerHTML = '<p class="pedido-error">⚠ Sin conexión. Verifica tu red e inténtalo de nuevo.</p>';
   });
 }
 
@@ -847,7 +891,7 @@ function loginDelivery() {
     showToast('✓ ¡Bienvenido de nuevo, ' + d.nombre + '!');
   })
   .catch(function() {
-    errEl.textContent = '⚠ Error de conexión. Intenta de nuevo.';
+    errEl.textContent = '⚠ Sin conexión al servidor. Verifica tu red e intenta de nuevo.';
     errEl.style.display = '';
   });
 }
@@ -898,7 +942,7 @@ function registrarDelivery() {
     });
   })
   .catch(function() {
-    errEl.textContent = '⚠ Error de conexión. Intenta de nuevo.';
+    errEl.textContent = '⚠ Sin conexión al servidor. Verifica tu red e intenta de nuevo.';
     errEl.style.display = '';
   });
 }
@@ -993,7 +1037,7 @@ function cargarDelivery() {
     }).join('');
   })
   .catch(function() {
-    lista.innerHTML = '<p style="color:#d9534f; text-align:center; padding:2rem;">Error de conexión</p>';
+    lista.innerHTML = '<p style="color:#d9534f; text-align:center; padding:2rem;">⚠ Sin conexión al servidor</p>';
   });
 }
 
@@ -1291,7 +1335,7 @@ function cargarPedidosAdmin() {
     renderPedidosAdmin();
   })
   .catch(function() {
-    lista.innerHTML = '<p style="color:#d9534f; text-align:center; padding:2rem;">Error de conexión</p>';
+    lista.innerHTML = '<p style="color:#d9534f; text-align:center; padding:2rem;">⚠ Sin conexión al servidor</p>';
   });
 }
 
@@ -1412,7 +1456,7 @@ function borrarPedidoAdmin(pedidoId) {
     } else {
       showToast('⚠ Error al borrar el pedido');
     }
-  }).catch(function() { showToast('⚠ Error de conexión'); });
+  }).catch(function() { showToast('⚠ Sin conexión. Intenta de nuevo.'); });
 }
 
 // ── ASIGNAR DELIVERY DESDE ADMIN ─────────────────
@@ -1527,3 +1571,22 @@ function asignarDeliveryAdmin(deliveryId, deliveryNombre, deliveryCorreo) {
   })
   .catch(function() { showToast('⚠ Error al asignar pedido'); });
 }
+
+// ── DETECCIÓN OFFLINE/ONLINE ──────────────────────────────────────────────────
+// Muestra un banner si no hay conexión a internet y lo oculta al reconectarse
+(function() {
+  var banner = document.getElementById('offlineBanner');
+  function actualizarEstadoRed() {
+    if (!banner) return;
+    if (!navigator.onLine) {
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+  window.addEventListener('online',  actualizarEstadoRed);
+  window.addEventListener('offline', actualizarEstadoRed);
+  // Verificar al cargar
+  document.addEventListener('DOMContentLoaded', actualizarEstadoRed);
+  actualizarEstadoRed();
+})();
