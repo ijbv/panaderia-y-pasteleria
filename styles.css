@@ -190,6 +190,9 @@ button { font-family: var(--font-body); cursor: pointer; }
   transition: all var(--transition);
   display: flex; align-items: center; justify-content: center;
 }
+@media (max-width: 480px) {
+  .scroll-top-btn { right: 1.2rem; width: 4rem; height: 4rem; font-size: 1.4rem; }
+}
 .scroll-top-btn.visible { opacity: 1; transform: translateY(0); }
 .scroll-top-btn:hover { background: var(--ink); }
 
@@ -1724,9 +1727,9 @@ button { font-family: var(--font-body); cursor: pointer; }
   .admin-card select { width: 100%; margin-bottom: .4rem; }
   .admin-card div[style*="display:flex"] { flex-direction: column; }
 
-  /* Botones flotantes — más pequeños en tablet */
-  button[onclick="abrirDelivery()"],
-  button[onclick="abrirAdmin()"] { width: 2.8rem; height: 2.8rem; font-size: 1.1rem; }
+  /* Botones flotantes — alineados con la flecha en tablet */
+  button[onclick="abrirDelivery()"] { width: 4rem; height: 4rem; font-size: 1.5rem; right: 2rem; bottom: 13.4rem; }
+  button[onclick="abrirAdmin()"]    { width: 4rem; height: 4rem; font-size: 1.5rem; right: 2rem; bottom: 8.4rem; }
 
   /* Modal foto entrega */
   #modalFotoEntrega > div { padding: 1.2rem; }
@@ -1750,9 +1753,9 @@ button { font-family: var(--font-body); cursor: pointer; }
   .admin-card { border-radius: .8rem; }
   .btn-filtro-admin { padding: .4rem .7rem; font-size: .78rem; }
 
-  /* Botones flotantes — posición ajustada para no tapar contenido */
-  button[onclick="abrirDelivery()"] { bottom: 4rem; right: .8rem; width: 2.6rem; height: 2.6rem; font-size: 1rem; }
-  button[onclick="abrirAdmin()"]    { bottom: 7.2rem; right: .8rem; width: 2.6rem; height: 2.6rem; font-size: 1rem; }
+  /* Botones flotantes — posición ajustada para móvil */
+  button[onclick="abrirDelivery()"] { bottom: 12rem; right: 1.2rem; width: 4rem; height: 4rem; font-size: 1.5rem; }
+  button[onclick="abrirAdmin()"]    { bottom: 7rem;  right: 1.2rem; width: 4rem; height: 4rem; font-size: 1.5rem; }
 
   /* Modal asignar delivery */
   #modalAsignarDelivery > div { padding: 1.2rem; }
@@ -1994,8 +1997,8 @@ button { font-family: var(--font-body); cursor: pointer; }
   .footer-bottom img { height: 2.2rem; }
 
   /* Botones flotantes */
-  button[onclick="abrirDelivery()"] { bottom: 4rem; right: .8rem; width: 2.6rem; height: 2.6rem; font-size: 1rem; }
-  button[onclick="abrirAdmin()"]    { bottom: 7.2rem; right: .8rem; width: 2.6rem; height: 2.6rem; font-size: 1rem; }
+  button[onclick="abrirDelivery()"] { bottom: 12rem; right: 1.2rem; width: 4rem; height: 4rem; font-size: 1.5rem; }
+  button[onclick="abrirAdmin()"]    { bottom: 7rem;  right: 1.2rem; width: 4rem; height: 4rem; font-size: 1.5rem; }
 }
 
 /* Móviles muy pequeños */
