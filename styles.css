@@ -825,336 +825,64 @@ button { font-family: var(--font-body); cursor: pointer; }
 /* ================================================
    RESPONSIVE
    ================================================ */
-
-/* ================================================
-   MEJORAS RESPONSIVE COMPLETAS
-   Arreglos para tablets, móviles y pantallas pequeñas
-   ================================================ */
-
-/* ── CONTENEDOR BASE ── */
-.container {
-  max-width: 128rem;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 4rem;
-}
-
-/* ── HEADER: evitar desbordamiento en pantallas medianas ── */
-.header-inner {
-  flex-wrap: wrap;
-  gap: 1.5rem;
-}
-
-/* ── BÚSQUEDA: no desbordar ── */
-.search-form input {
-  width: clamp(10rem, 15vw, 20rem);
-}
-
-/* ── HERO: texto legible en cualquier tamaño ── */
-.hero h1 {
-  font-size: clamp(3.5rem, 7vw, 9rem);
-}
-.hero-desc {
-  font-size: clamp(1.4rem, 2vw, 1.7rem);
-}
-
-/* ── SECTION TITLE: escala fluida ── */
-.section-title {
-  font-size: clamp(2.8rem, 5vw, 4.2rem);
-}
-
-/* ── NEWSLETTER: título fluido ── */
-.newsletter-copy h2 {
-  font-size: clamp(2.6rem, 4vw, 3.8rem);
-}
-
-/* ================================================
-   TABLET GRANDE (max 1200px)
-   ================================================ */
-@media (max-width: 1200px) {
-  .container { padding: 0 3rem; }
-  .header-inner { gap: 1.5rem; }
-  .search-form input { width: 16rem; }
-  .footer-grid { grid-template-columns: 1.2fr 1fr 1fr 1.1fr; gap: 3rem; }
-}
-
-/* ================================================
-   TABLET (max 1024px) — ajustes adicionales
-   ================================================ */
 @media (max-width: 1024px) {
-  .container { padding: 0 2.5rem; }
-  
-  /* Nav horizontal comprimida */
-  .main-nav a {
-    padding: .7rem 1rem;
-    font-size: 1.1rem;
-  }
-
-  /* Categorías: 2 columnas en tablet */
-  .categories-grid { grid-template-columns: repeat(2, 1fr); }
-  .category-card:last-child {
-    grid-column: 1 / -1;
-    max-width: 50%;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  /* Bestsellers */
-  .bestsellers-layout {
-    grid-template-columns: 1fr 1.4fr 1fr;
-    grid-template-rows: repeat(2, 24rem);
-  }
-
-  /* Newsletter */
+  .features-grid { grid-template-columns: repeat(2,1fr); }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 4rem; }
   .newsletter-inner { flex-direction: column; text-align: center; }
   .newsletter-form { min-width: auto; width: 100%; max-width: 50rem; }
-
-  /* Footer */
-  .footer-grid { grid-template-columns: 1fr 1fr; gap: 3.5rem; }
 }
 
-/* ================================================
-   TABLET PEQUEÑA / LANDSCAPE MÓVIL (max 768px)
-   ================================================ */
 @media (max-width: 768px) {
   html { font-size: 55%; }
-  .container { padding: 0 2rem; }
+  .container { padding: 0 2.4rem; }
 
-  /* Topbar oculto */
   .topbar { display: none; }
 
-  /* Header */
-  .hamburger { display: flex; }
-  .search-form { display: none; }
-  .site-header { position: relative; }
+  .hamburger { display: block; }
 
   .main-nav {
     display: none;
-    position: absolute;
-    top: 100%; left: 0; right: 0;
-    background: var(--cream);
-    border-top: 1px solid var(--border);
-    padding: 1.6rem 2rem;
-    box-shadow: var(--shadow-md);
-    z-index: 400;
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--cream); border-top: 1px solid var(--border);
+    padding: 1.6rem 2.4rem; box-shadow: var(--shadow-md);
   }
   .main-nav.open { display: block; }
   .main-nav ul { flex-direction: column; gap: 0; }
-  .main-nav a {
-    display: block;
-    padding: 1.2rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 1.4rem;
-  }
+  .main-nav a { display: block; padding: 1.2rem 0; border-bottom: 1px solid var(--border); }
   .main-nav a::after { display: none; }
 
-  /* Hero */
-  .hero { height: 75vh; min-height: 50rem; }
-  .hero-content { padding: 0 2rem; }
+  .search-form { display: none; }
+  .site-header { position: relative; }
 
-  /* Features */
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
-  .feature-item { padding: 2rem; }
+  .hero h1 { font-size: 5.5rem; }
 
-  /* Secciones */
-  .section { padding: 6rem 0; }
-  .section-header { margin-bottom: 4rem; }
-
-  /* Categorías: 1 columna */
   .categories-grid { grid-template-columns: 1fr; }
-  .category-card { height: 22rem; }
-  .category-card:last-child {
-    grid-column: auto;
-    max-width: 100%;
-    margin: 0;
-  }
+  .category-card { height: 20rem; }
 
-  /* Productos */
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-  }
-
-  /* Bestsellers */
-  .bestsellers-section { padding: 6rem 0; }
   .bestsellers-layout {
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(3, 18rem);
+    grid-template-rows: repeat(3, 20rem);
   }
-  .bestsellers-layout .bs-main {
-    grid-column: 1 / 3;
-    grid-row: 1;
-  }
+  .bestsellers-layout .bs-main { grid-column: 1/3; grid-row: 1; }
 
-  /* Blog */
   .blogs-grid { grid-template-columns: 1fr; }
-  .blogs-section { padding: 6rem 0; }
+  .footer-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .footer-bottom { flex-direction: column; gap: 1.6rem; }
 
-  /* Newsletter */
-  .newsletter-strip { padding: 4.5rem 0; }
-  .newsletter-inner { gap: 2.5rem; }
-
-  /* Footer */
-  .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
-  .footer-bottom { flex-direction: column; gap: 1.4rem; text-align: center; }
-
-  /* Modal */
-  .modal.open { flex-direction: column; max-width: 96vw; }
+  .modal.open { flex-direction: column; }
   .modal-img-col { width: 100%; height: 22rem; }
 }
 
-/* ================================================
-   MÓVIL (max 600px)
-   ================================================ */
-@media (max-width: 600px) {
-  html { font-size: 52%; }
-  .container { padding: 0 1.6rem; }
-
-  /* Header más compacto */
-  .header-inner { padding: 1.4rem 0; }
-  .logo-name { font-size: 1.8rem; }
-
-  /* Hero */
-  .hero { height: auto; min-height: 55rem; padding: 8rem 0 6rem; }
-  .hero-content { height: auto; justify-content: flex-start; padding-top: 4rem; }
-  .hero-ctas { flex-direction: column; gap: 1.2rem; }
-  .hero-ctas .btn-primary,
-  .hero-ctas .btn-outline { width: 100%; text-align: center; padding: 1.4rem; }
-  .hero-scroll { display: none; }
-
-  /* Features */
-  .features-grid { grid-template-columns: 1fr 1fr; }
-  .feature-item { padding: 1.6rem 1.2rem; gap: 1.2rem; }
-  .feature-icon { width: 3.8rem; height: 3.8rem; font-size: 1.5rem; }
-
-  /* Secciones */
-  .section { padding: 5rem 0; }
-  .section-header { margin-bottom: 3rem; }
-
-  /* Productos: 2 columnas en móvil */
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.4rem;
-  }
-  .product-info { padding: 1.4rem 1.5rem; }
-  .product-name { font-size: 1.7rem; }
-  .product-price { font-size: 2rem; }
-  .btn-add-cart { padding: .7rem 1.2rem; font-size: 1rem; }
-
-  /* Bestsellers */
-  .bestsellers-layout {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(3, 16rem);
-    gap: 1.2rem;
-  }
-
-  /* Blog */
-  .blog-title { font-size: 1.9rem; }
-
-  /* Newsletter */
-  .newsletter-form { flex-direction: column; border-radius: 1rem; }
-  .newsletter-form input,
-  .newsletter-form button {
-    width: 100%;
-    border-radius: 0;
-    text-align: center;
-  }
-  .newsletter-form input { border-radius: 1rem 1rem 0 0; }
-  .newsletter-form button { border-radius: 0 0 1rem 1rem; }
-
-  /* Footer */
-  .footer-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-
-  /* Cart */
-  .cart-sidebar { width: 100vw; right: -100vw; }
-
-  /* Botones flotantes */
-  button[onclick="abrirDelivery()"] { bottom: 4.5rem; right: 1rem; width: 3rem; height: 3rem; font-size: 1.2rem; }
-  button[onclick="abrirAdmin()"] { bottom: 8rem; right: 1rem; width: 3rem; height: 3rem; font-size: 1.2rem; }
-}
-
-/* ================================================
-   MÓVIL PEQUEÑO (max 480px)
-   ================================================ */
 @media (max-width: 480px) {
   html { font-size: 48%; }
-  .container { padding: 0 1.4rem; }
-
-  /* Features: 1 columna */
+  .hero-ctas { flex-direction: column; }
   .features-grid { grid-template-columns: 1fr; }
-  .feature-item { padding: 1.8rem 2rem; }
-
-  /* Productos: 1 columna */
-  .products-grid { grid-template-columns: 1fr; gap: 1.8rem; }
-
-  /* Bestsellers: 1 columna */
-  .bestsellers-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    gap: 1rem;
-  }
-  .bestsellers-layout img { height: 22rem; }
-  .bestsellers-layout .bs-main {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
-  /* Categorías */
-  .category-card { height: 19rem; }
-  .category-card-content p { font-size: 2.4rem; }
-
-  /* Hero */
-  .hero { min-height: 48rem; }
-
-  /* Checkout */
-  .delivery-options { grid-template-columns: 1fr 1fr; }
-  .checkout-modal { padding: 2rem 1.2rem; }
-  .checkout-actions { flex-direction: column; }
-  .btn-cancel-checkout { order: 2; }
-
-  /* PagoMovil */
-  .pagomovil-datos { grid-template-columns: 1fr; }
-
-  /* Buscar pedido */
-  .buscar-input-row { flex-direction: column; }
-
-  /* Botones flotantes */
-  button[onclick="abrirDelivery()"] { bottom: 4rem; right: .8rem; width: 2.8rem; height: 2.8rem; font-size: 1.1rem; }
-  button[onclick="abrirAdmin()"] { bottom: 7.5rem; right: .8rem; width: 2.8rem; height: 2.8rem; font-size: 1.1rem; }
-}
-
-/* ================================================
-   MÓVIL MUY PEQUEÑO (max 360px)
-   ================================================ */
-@media (max-width: 360px) {
-  html { font-size: 44%; }
-  .container { padding: 0 1.2rem; }
-
   .products-grid { grid-template-columns: 1fr; }
-  .hero-ctas .btn-primary,
-  .hero-ctas .btn-outline { font-size: 1.1rem; padding: 1.2rem; }
-
-  .btn-filtro-delivery,
-  .btn-filtro-admin { padding: .35rem .6rem; font-size: .75rem; }
+  .bestsellers-layout { grid-template-columns: 1fr; }
+  .bestsellers-layout .bs-main { grid-column: 1; }
 }
 
-/* ================================================
-   IMAGEN SEGURA — que todas las imágenes sean responsive
-   ================================================ */
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* ── EVITAR DESBORDAMIENTO HORIZONTAL ── */
-* {
-  box-sizing: border-box;
-}
-html, body {
-  overflow-x: hidden;
-  width: 100%;
-}
-
+/* ═══════════════════════════════════════
    CHECKOUT MODAL
    ═══════════════════════════════════════ */
 
@@ -2050,4 +1778,232 @@ html, body {
 @media (max-width: 360px) {
   html { font-size: 44%; }
   .btn-filtro-delivery, .btn-filtro-admin { padding: .35rem .6rem; font-size: .75rem; }
+}
+
+/* ================================================
+   RESPONSIVE — AJUSTES ADICIONALES PARA TODOS LOS DISPOSITIVOS
+   ================================================ */
+
+/* Contenedor fluido en todos los tamaños */
+@media (max-width: 1280px) {
+  .container { padding: 0 3rem; }
+}
+
+@media (max-width: 1024px) {
+  .container { padding: 0 2.4rem; }
+  .section { padding: 7rem 0; }
+
+  /* Header */
+  .search-form input { width: 14rem; }
+  .main-nav a { padding: .8rem 1rem; font-size: 1.1rem; }
+
+  /* Hero */
+  .hero h1 { font-size: clamp(4rem, 7vw, 7rem); }
+
+  /* Categorías */
+  .categories-grid { gap: 1.6rem; }
+  .category-card { height: 22rem; }
+
+  /* Grilla productos */
+  .products-grid { grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: 2.2rem; }
+
+  /* Bestsellers */
+  .bestsellers-layout { grid-template-rows: repeat(2, 22rem); }
+
+  /* Footer */
+  .footer-grid { gap: 3.5rem; }
+
+  /* Newsletter */
+  .newsletter-copy h2 { font-size: 3.2rem; }
+  .newsletter-form { min-width: 36rem; }
+}
+
+/* Tablets en landscape y pantallas medianas */
+@media (max-width: 900px) {
+  .container { padding: 0 2rem; }
+
+  /* Topbar — ocultar elementos secundarios */
+  .topbar-contact span:last-child { display: none; }
+  .topbar-right span { display: none; }
+
+  /* Header — mostrar hamburguesa */
+  .hamburger { display: block; }
+  .main-nav { display: none; }
+  .main-nav.open { display: block; }
+  .search-form { display: none; }
+
+  /* Hero */
+  .hero { height: 75vh; min-height: 50rem; }
+  .hero h1 { font-size: clamp(3.8rem, 6vw, 6rem); }
+  .hero-desc { font-size: 1.5rem; }
+
+  /* Features */
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Categorías */
+  .categories-grid { grid-template-columns: 1fr 1fr; }
+  .category-card:last-child { grid-column: 1 / -1; }
+
+  /* Productos */
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+
+  /* Bestsellers */
+  .bestsellers-layout {
+    grid-template-columns: 1fr 1.4fr 1fr;
+    grid-template-rows: repeat(2, 20rem);
+  }
+
+  /* Blogs */
+  .blogs-grid { grid-template-columns: 1fr 1fr; gap: 2.4rem; }
+  .blogs-grid .blog-card:last-child { grid-column: 1 / -1; }
+
+  /* Footer */
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
+
+  /* Newsletter */
+  .newsletter-inner { flex-direction: column; text-align: center; align-items: center; }
+  .newsletter-form { min-width: auto; width: 100%; max-width: 48rem; }
+  .newsletter-copy h2 { font-size: 3rem; }
+
+  /* Sección búsqueda pedido */
+  .section-title { font-size: 3.6rem; }
+}
+
+/* Tablets portrait */
+@media (max-width: 768px) {
+  html { font-size: 55%; }
+  .container { padding: 0 2rem; }
+  .section { padding: 6rem 0; }
+
+  /* Topbar */
+  .topbar { display: none; }
+
+  /* Hero */
+  .hero { height: 70vh; }
+  .hero-content { padding: 0 2rem; }
+  .hero h1 { font-size: 5.5rem; }
+  .hero-desc { font-size: 1.5rem; max-width: 38rem; }
+
+  /* Features */
+  .features-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Categorías */
+  .categories-grid { grid-template-columns: 1fr; }
+  .category-card { height: 20rem; }
+
+  /* Bestsellers */
+  .bestsellers-layout {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, 18rem);
+  }
+  .bestsellers-layout .bs-main { grid-column: 1/3; grid-row: 1; }
+
+  /* Blogs */
+  .blogs-grid { grid-template-columns: 1fr; }
+  .blogs-grid .blog-card:last-child { grid-column: auto; }
+
+  /* Footer */
+  .footer-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .footer-bottom { flex-direction: column; gap: 1.6rem; text-align: center; }
+
+  /* Modal */
+  .modal.open { flex-direction: column; }
+  .modal-img-col { width: 100%; height: 22rem; }
+
+  /* Site header */
+  .site-header { position: relative; }
+  .hamburger { display: block; }
+  .search-form { display: none; }
+  .main-nav {
+    display: none;
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--cream);
+    border-top: 1px solid var(--border);
+    padding: 1.6rem 2.4rem;
+    box-shadow: var(--shadow-md);
+    z-index: 499;
+  }
+  .main-nav.open { display: block; }
+  .main-nav ul { flex-direction: column; gap: 0; }
+  .main-nav a { display: block; padding: 1.2rem 0; border-bottom: 1px solid var(--border); }
+  .main-nav a::after { display: none; }
+
+  /* Section title más pequeño */
+  .section-title { font-size: 3.4rem; }
+}
+
+/* Móviles grandes */
+@media (max-width: 600px) {
+  .container { padding: 0 1.6rem; }
+  .section { padding: 5rem 0; }
+
+  .hero { height: 65vh; min-height: 44rem; }
+  .hero h1 { font-size: 4.8rem; }
+  .hero-desc { font-size: 1.4rem; }
+  .hero-ctas { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
+
+  /* Features — una columna */
+  .features-grid { grid-template-columns: 1fr; }
+
+  /* Productos — 2 columnas compactas */
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
+  .product-info { padding: 1.4rem 1.4rem; }
+  .product-name { font-size: 1.6rem; }
+  .product-price { font-size: 2rem; }
+  .btn-add-cart { padding: .7rem 1rem; font-size: .95rem; }
+
+  /* Newsletter */
+  .newsletter-strip { padding: 4rem 0; }
+  .newsletter-form { flex-direction: column; border-radius: var(--radius); }
+  .newsletter-form input { border-radius: var(--radius) var(--radius) 0 0; }
+  .newsletter-form button { border-radius: 0 0 var(--radius) var(--radius); text-align: center; }
+
+  /* Section title */
+  .section-title { font-size: 3rem; }
+}
+
+/* Móviles estándar */
+@media (max-width: 480px) {
+  html { font-size: 48%; }
+  .container { padding: 0 1.4rem; }
+
+  /* Hero */
+  .hero h1 { font-size: 4.4rem; }
+  .hero-ctas { flex-direction: column; }
+  .btn-primary, .btn-outline { width: 100%; text-align: center; padding: 1.4rem 2rem; }
+
+  /* Features — 1 columna */
+  .features-grid { grid-template-columns: 1fr; }
+
+  /* Productos — 1 columna */
+  .products-grid { grid-template-columns: 1fr; }
+
+  /* Bestsellers — 1 columna */
+  .bestsellers-layout { grid-template-columns: 1fr; grid-template-rows: repeat(5, 18rem); }
+  .bestsellers-layout .bs-main { grid-column: 1; grid-row: 1; }
+
+  /* Category cards */
+  .category-card { height: 18rem; }
+  .category-card-content p { font-size: 2.4rem; }
+
+  /* Section title */
+  .section-title { font-size: 2.8rem; }
+  .section-header { margin-bottom: 4rem; }
+
+  /* Footer logos de pago */
+  .footer-bottom img { height: 2.2rem; }
+
+  /* Botones flotantes */
+  button[onclick="abrirDelivery()"] { bottom: 4rem; right: .8rem; width: 2.6rem; height: 2.6rem; font-size: 1rem; }
+  button[onclick="abrirAdmin()"]    { bottom: 7.2rem; right: .8rem; width: 2.6rem; height: 2.6rem; font-size: 1rem; }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 360px) {
+  html { font-size: 44%; }
+  .container { padding: 0 1.2rem; }
+  .hero h1 { font-size: 4rem; }
+  .section-title { font-size: 2.6rem; }
+  .products-grid { grid-template-columns: 1fr; }
+  .logo-name { font-size: 1.7rem; }
 }
